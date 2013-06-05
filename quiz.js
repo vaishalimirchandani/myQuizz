@@ -28,6 +28,16 @@ HTTP.createServer(function(request, response) {
             FS.appendFile('bbdd.txt', question+'\n', 'utf-8', function(err){
                 action(err);
             });
+        },
+        delete: function (question, action) {
+            FS.readFile('bbdd.txt','utf-8', function(err, bbdd) {
+                if (!err) {
+                    bbdd = bbdd.replace(new RegExp(question + ':.*\n', 'g'), '');
+                    FS.writeFile('bbdd.txt', bbdd, 'utf-8', function (err) {
+                        action(err);
+                    });
+                } else { action(err); };
+            });
         }
     }
 
@@ -103,6 +113,19 @@ HTTP.createServer(function(request, response) {
                 if (!err) CONTROLLER.index();  // redirección a 'GET quiz/index'
                 else      VIEW.error(500, "Server bbdd Error_c");
             });
+        },
+        remove: function() {
+            MODEL.all_questions (function(err, all_questions) {
+                if (!err) VIEW.render('remove.html', all_questions);
+                else      VIEW.error(500, "Server bbdd Error_d");
+            });
+        },
+
+        delete: function () {
+            MODEL.delete (question, function(err) {
+                if (!err) CONTROLLER.index();  // redirección a 'GET quiz/index'
+                else      VIEW.error(500, "Server bbdd Error_e");
+            });
         }
     }
 
@@ -125,6 +148,8 @@ HTTP.createServer(function(request, response) {
             case 'GET /quiz/showall'    : CONTROLLER.showall()  ; break;
             case 'GET /quiz/new'       : CONTROLLER.new()     ; break;
             case 'POST /quiz/create'   : CONTROLLER.create()  ; break;
+            case 'GET /quiz/remove'    : CONTROLLER.remove()  ; break;
+            case 'POST /quiz/delete'   : CONTROLLER.delete()  ; break;
             default: {
                 if (request.method == 'GET') CONTROLLER.file() ;
                 else VIEW.error(400, "Unsupported request");
