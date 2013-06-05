@@ -1,5 +1,6 @@
 var HTTP = require('http');  // Librería HTTP
 var URL  = require('url');   // Librería con parser de URLs
+var QS   = require('querystring');
 var FS   = require('fs');    // Librería de acceso a ficheros
 var MIME = require('mime');
 
@@ -21,6 +22,11 @@ HTTP.createServer(function(request, response) {
         all_questions: function (action) {
             FS.readFile('bbdd.txt', 'utf-8', function(err, bbdd) {
                 action(err, bbdd.replace(/^(.*): .*$/mg, '<option>$1</option>'));
+            });
+        },
+        create: function (question, action) {
+            FS.appendFile('bbdd.txt', question+'\n', 'utf-8', function(err){
+                action(err);
             });
         }
     }
@@ -65,7 +71,6 @@ HTTP.createServer(function(request, response) {
     var CONTROLLER = {
         index: function () {
             MODEL.all_questions (function(err, all_questions) {
-                console.log(all_questions);
                 if (!err) VIEW.render('index.html', all_questions);
                 else      VIEW.error(500, "Server bbdd Error");
             });
@@ -80,27 +85,50 @@ HTTP.createServer(function(request, response) {
 
         showall: function () {
             MODEL.findAll(function(err, list) {
-                console.log(list);
                 if (!err) VIEW.render('showall.html', list);
                 else      VIEW.error(500, "Server bbdd Error");
             });
         },
 
-        file: function() { VIEW.file(url.pathname.slice(1)); }
-    }
+        file: function() {
+            VIEW.file(url.pathname.slice(1));
+        },
 
+        new: function () {
+            VIEW.render ('new.html', "");
+        },
 
-    var url      = URL.parse(request.url, true); // parsea el url enviado
-    var route    = request.method + ' ' + url.pathname;  // crea ruta
-    var question = url.query.preg; // Extrae pregunta de query, si existe
-
-    switch (route) {            // Analiza ruta e invoica controlador
-        case 'GET /quiz/index'   : CONTROLLER.index() ; break;
-        case 'GET /quiz/show'    : CONTROLLER.show()  ; break;
-        case 'GET /quiz/showall'    : CONTROLLER.showall()  ; break;
-        default: {
-            if (request.method == 'GET') CONTROLLER.file() ;
-            else VIEW.error(400, "Unsupported request");
+        create: function () {
+            MODEL.create(question, function(err) {
+                if (!err) CONTROLLER.index();  // redirección a 'GET quiz/index'
+                else      VIEW.error(500, "Server bbdd Error_c");
+            });
         }
     }
+
+
+
+    var url       = URL.parse(request.url, true);
+    var post_data = "";
+    request.on('data', function (chunk) { post_data += chunk; });
+    request.on('end', function() {
+
+        post_data = QS.parse(post_data);
+
+        // "question" variable global -> visible en controlador
+        question  = (post_data.preg || url.query.preg);
+        var route = request.method + ' ' + url.pathname;
+
+        switch (route) {
+            case 'GET /quiz/index'     : CONTROLLER.index()   ; break;
+            case 'GET /quiz/show'      : CONTROLLER.show()    ; break;
+            case 'GET /quiz/showall'    : CONTROLLER.showall()  ; break;
+            case 'GET /quiz/new'       : CONTROLLER.new()     ; break;
+            case 'POST /quiz/create'   : CONTROLLER.create()  ; break;
+            default: {
+                if (request.method == 'GET') CONTROLLER.file() ;
+                else VIEW.error(400, "Unsupported request");
+            }
+        }
+    });
 }).listen(3000);
