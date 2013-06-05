@@ -149,7 +149,7 @@ HTTP.createServer(function(request, response) {
             case 'GET /quiz/new'       : CONTROLLER.new()     ; break;
             case 'POST /quiz/create'   : CONTROLLER.create()  ; break;
             case 'GET /quiz/remove'    : CONTROLLER.remove()  ; break;
-            case 'POST /quiz/delete'   : CONTROLLER.delete()  ; break;
+            case 'DELETE /quiz/delete' : CONTROLLER.delete()  ; break;
             default: {
                 if (request.method == 'GET') CONTROLLER.file() ;
                 else VIEW.error(400, "Unsupported request");
