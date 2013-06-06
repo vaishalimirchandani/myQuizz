@@ -1,23 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"><title> Formulario </title></head> 
+<h3>Crear nueva pregunta</h3>
 
-<body>
-  <h3>Crear nueva pregunta</h3>
+<form method="POST" action="/quiz/create">
 
-  <form method="POST" action="/quiz/create">
-        
     Pregunta:
-    <input type="text"   
-           name="preg" 
-           value="Pregunta: respuesta" 
+    <input type="text"
+           name="preg"
+           value="Pregunta: respuesta"
            size="20">
     <p>
-    <input type="submit" value="Crear">
+        <input type="submit" value="Crear">
 
-  </form>
+</form>
 
-  <p>   <a href="/quiz/index">Realice otra pregunta</a>
-
-</body> 
-</html>
+<p>   <a href="/quiz/index">Realice otra pregunta</a>
