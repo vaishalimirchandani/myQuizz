@@ -59,7 +59,7 @@ HTTP.createServer(function(request, response) {
                     FS.readFile(file, 'utf-8', function(err, view) { // leer vista
                         if (!err) {
                             var data = app.replace(/<%view%>/, view); // integrar marco y vista
-                            data = data.replace(/<%r1%>/, r1);    // integrar parámetro <%r1%>
+                            data = data.replace(/<%r1%>/g, r1);    // integrar parámetro <%r1%>
                             response.writeHead(200, {
                                 'Content-Type': 'text/html',
                                 'Content-Length': data.length
