@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title> Formulario </title></head>
+
+<body>
+<h3>Edite la pregunta</h3>
+
+<form method="POST" action="/quiz/update">
+    <input type="hidden" name="_method" value="PUT">
+
+    <label for="old">Pregunta que va a cambiar</label>
+    <select id="old" name="preg">
+        <option><%r1%></option>
+    </select> <p>
+
+
+    <label for="preg">Cambie su pregunta</label>
+    <input type="text"
+           name="preg"
+           id="preg"
+           value="<%r1%>"
+           size="50">
+    <p>
+        <input type="submit" value="Editar">
+
+</form>
+
+</body>
+</html>

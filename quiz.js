@@ -38,6 +38,16 @@ HTTP.createServer(function(request, response) {
                     });
                 } else { action(err); };
             });
+        },
+        changeAnswer:function (question, action) {
+            FS.readFile('bbdd.txt','utf-8', function(err, bbdd) {
+                if (!err) {
+                    bbdd = bbdd.replace(new RegExp(question[0] + '\n', 'g'), question[1]+'\n');
+                    FS.writeFile('bbdd.txt', bbdd, 'utf-8', function (err) {
+                        action(err);
+                    });
+                } else { action(err); };
+            });
         }
     }
 
@@ -46,7 +56,7 @@ HTTP.createServer(function(request, response) {
         render: function (file, r1) {
             FS.readFile(file, 'utf-8', function(err, data) {
                 if (!err) {
-                    var data = data.replace(/<%r1%>/, r1);
+                    var data = data.replace(/<%r1%>/g, r1);
                     response.writeHead(200, {
                         'Content-Type': 'text/html',
                         'Content-Length': data.length
@@ -126,6 +136,20 @@ HTTP.createServer(function(request, response) {
                 if (!err) CONTROLLER.index();  // redirección a 'GET quiz/index'
                 else      VIEW.error(500, "Server bbdd Error_e");
             });
+        },
+
+        edit: function (){
+            MODEL.find(question, function(err, answer) {
+                if (!err) VIEW.render('edit.html',(answer||["Sin respuesta"])[0]);
+                else      VIEW.error(500, "Server bbdd Error");
+            });
+        },
+
+        update: function (){
+            MODEL.changeAnswer(question, function(err) {
+                if (!err) CONTROLLER.index();
+                else      VIEW.error(500, "Server bbdd Error_e");
+            });
         }
     }
 
@@ -140,16 +164,18 @@ HTTP.createServer(function(request, response) {
 
         // "question" variable global -> visible en controlador
         question  = (post_data.preg || url.query.preg);
-        var route = request.method + ' ' + url.pathname;
+        var route = (post_data._method || request.method) + ' ' + url.pathname;
 
         switch (route) {
             case 'GET /quiz/index'     : CONTROLLER.index()   ; break;
             case 'GET /quiz/show'      : CONTROLLER.show()    ; break;
-            case 'GET /quiz/showall'    : CONTROLLER.showall()  ; break;
+            case 'GET /quiz/showall'   : CONTROLLER.showall() ; break;
             case 'GET /quiz/new'       : CONTROLLER.new()     ; break;
             case 'POST /quiz/create'   : CONTROLLER.create()  ; break;
             case 'GET /quiz/remove'    : CONTROLLER.remove()  ; break;
             case 'DELETE /quiz/delete' : CONTROLLER.delete()  ; break;
+            case 'GET /quiz/edit'      : CONTROLLER.edit()    ; break;
+            case 'PUT /quiz/update'    : CONTROLLER.update()  ; break;
             default: {
                 if (request.method == 'GET') CONTROLLER.file() ;
                 else VIEW.error(400, "Unsupported request");
